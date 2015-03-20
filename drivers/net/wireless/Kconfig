@@ -264,6 +264,9 @@ config MWL8K
 	  To compile this driver as a module, choose M here: the module
 	  will be called mwl8k.  If unsure, say N.
 
+config RTL8192_HABEY
+	tristate "rtl8192 habey support"
+	
 source "drivers/net/wireless/ath/Kconfig"
 source "drivers/net/wireless/b43/Kconfig"
 source "drivers/net/wireless/b43legacy/Kconfig"
@@ -280,5 +283,9 @@ source "drivers/net/wireless/rtlwifi/Kconfig"
 source "drivers/net/wireless/ti/Kconfig"
 source "drivers/net/wireless/zd1211rw/Kconfig"
 source "drivers/net/wireless/mwifiex/Kconfig"
+#ben
+#source "drivers/net/wireless/rtl8192cu_new/Kconfig"
+#source "drivers/net/wireless/rtl8192cu_master/Kconfig"
+source "drivers/net/wireless/rtl8192cu_rpi/Kconfig"
 
 endif # WLAN
