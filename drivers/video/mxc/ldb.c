@@ -138,6 +138,17 @@ struct ldb_data {
 static int g_ldb_mode;
 
 static struct fb_videomode ldb_modedb[] = {
+	//add ben
+	{
+         "LDB-G104AGE", 60, 
+         800, 600, 25000,
+         100, 156,
+         10, 18,
+         10, 10,
+         0,
+         FB_VMODE_NONINTERLACED,
+         FB_MODE_IS_DETAILED,},
+
 	{
 	 "LDB-WXGA", 60, 1280, 800, 14065,
 	 40, 40,
