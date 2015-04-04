@@ -135,9 +135,11 @@
 	status = "okay";
 };
 
+#if 0
 &mxcfb2 {
 	status = "okay";
 };
+#endif
 
 &pxp {
 	status = "okay";
