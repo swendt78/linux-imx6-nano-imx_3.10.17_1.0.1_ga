@@ -1051,7 +1051,7 @@ return true;
 
 static struct input_handler evdev_handler = {
 	.event		= evdev_event,
-	.match 		= evdev_match, /* Added by EETI*/
+	//.match 		= evdev_match, /* Added by EETI*/
 	.events		= evdev_events,
 	.connect	= evdev_connect,
 	.disconnect	= evdev_disconnect,

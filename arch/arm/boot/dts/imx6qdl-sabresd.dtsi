@@ -528,7 +528,6 @@
 	status = "okay";
 };
 
-#if 0
 &mipi_csi {
 	status = "okay";
 	ipu_id = <0>;
@@ -545,7 +544,6 @@
 	resets = <&mipi_dsi_reset>;
 	status = "okay";
 };
-#endif
 
 &pcie {
         //power-on-gpio = <&gpio3 19 0>;

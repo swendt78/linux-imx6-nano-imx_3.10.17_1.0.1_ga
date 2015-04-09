@@ -135,12 +135,30 @@
 	status = "okay";
 };
 
-#if 0
 &mxcfb2 {
 	status = "okay";
 };
-#endif
 
 &pxp {
 	status = "okay";
 };
+
+//add ben
+&vpu {
+        pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
+        status = "okay";
+};
+&gpc {
+        fsl,cpu_pupscr_sw2iso = <0xf>;
+        fsl,cpu_pupscr_sw = <0xf>;
+        fsl,cpu_pdnscr_iso2sw = <0x1>;
+        fsl,cpu_pdnscr_iso = <0x1>;
+        fsl,ldo-bypass = <1>; /* use ldo-bypass, u-boot will check it and configure */
+        fsl,wdog-reset = <1>; /* watchdog select of reset source */
+        pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
+};
+
+&gpu {
+        pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
+};
+

@@ -156,8 +156,11 @@ enum {
 static const struct usb_device_id usbtouch_devices[] = {
 #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
 	/* ignore the HID capable devices, handled by usbhid */
-	{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_IGNORE},
-	{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_IGNORE},
+	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_IGNORE},
+	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_IGNORE},
+	//add ben
+	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_EGALAX},
+	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_EGALAX},	
 
 	/* normal device IDs */
 	{USB_DEVICE(0x3823, 0x0001), .driver_info = DEVTYPE_EGALAX},
@@ -304,6 +307,13 @@ static int e2i_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
 #define EGALAX_PKT_TYPE_REPT		0x80
 #define EGALAX_PKT_TYPE_DIAG		0x0A
 
+//add ben
+#define EGALAX_PKT_TYPE_SIZE		0x06
+#define EGALAX_PKT_TYPE_11BITS		0x00
+#define EGALAX_PKT_TYPE_12BITS		0x02
+#define EGALAX_PKT_TYPE_13BITS		0x04
+#define EGALAX_PKT_TYPE_14BITS		0x06
+
 static int egalax_init(struct usbtouch_usb *usbtouch)
 {
 	int ret, i;
@@ -343,6 +353,7 @@ static int egalax_init(struct usbtouch_usb *usbtouch)
 	return ret;
 }
 
+#if 1
 static int egalax_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
 {
 	if ((pkt[0] & EGALAX_PKT_TYPE_MASK) != EGALAX_PKT_TYPE_REPT)
@@ -350,11 +361,53 @@ static int egalax_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
 
 	dev->x = ((pkt[3] & 0x0F) << 7) | (pkt[4] & 0x7F);
 	dev->y = ((pkt[1] & 0x0F) << 7) | (pkt[2] & 0x7F);
+        //dev->x = ((pkt[2] & 0x0F) << 7) | (pkt[1] & 0xFF);
+        //dev->y = ((pkt[4] & 0x0F) << 7) | (pkt[3] & 0xFF);
 	dev->touch = pkt[0] & 0x01;
 
+        printk( KERN_INFO "PFO : x = %d, y = %d", dev->x, dev->y );
+        //printk( KERN_INFO "PFO : %X %X %X %X %X %X", pkt[0], pkt[1], pkt[2], pkt[3], pkt[4], pkt[5] );
 	return 1;
 }
+#endif
+#if 0
+ static int egalax_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
+ {
+	int mask;
+ 	if ((pkt[0] & EGALAX_PKT_TYPE_MASK) != EGALAX_PKT_TYPE_REPT)
+ 		return 0;
+ 
+//-	dev->x = ((pkt[3] & 0x0F) << 7) | (pkt[4] & 0x7F);
+//-	dev->y = ((pkt[1] & 0x0F) << 7) | (pkt[2] & 0x7F);
+	switch(pkt[0] & EGALAX_PKT_TYPE_SIZE)
+	{
+	case EGALAX_PKT_TYPE_11BITS : 
+		mask = 0x07FF;
+		break;
+	case EGALAX_PKT_TYPE_12BITS : 
+		mask = 0x0FFF;
+		break;
+	case EGALAX_PKT_TYPE_13BITS : 
+		mask = 0x1FFF;
+		break;
+	case EGALAX_PKT_TYPE_14BITS : 
+		mask = 0x3FFF;
+		break;
+	default : 
+		mask = 0x7FFF;
+		break;
+	}
 
+	dev->x = (((pkt[4] & 0x7F) << 7) | (pkt[3] & 0x7F)) & mask;
+	dev->y = (((pkt[2] & 0x7F) << 7) | (pkt[1] & 0x7F)) & mask;
+	printk( KERN_INFO "PFO : x = %d, y = %d", dev->x, dev->y );
+	printk( KERN_INFO "PFO : %X %X %X %X %X %X", pkt[0], pkt[1], pkt[2], pkt[3], pkt[4], pkt[5] );
+	
+ 	dev->touch = pkt[0] & 0x01;
+ 
+ 	return 1;
+}
+#endif
 static int egalax_get_pkt_len(unsigned char *buf, int len)
 {
 	switch (buf[0] & EGALAX_PKT_TYPE_MASK) {
@@ -1089,8 +1142,10 @@ static struct usbtouch_device_info usbtouch_dev_info[] = {
 	[DEVTYPE_EGALAX] = {
 		.min_xc		= 0x0,
 		.max_xc		= 0x07ff,
+		//.max_xc         = 0x0fff,
 		.min_yc		= 0x0,
 		.max_yc		= 0x07ff,
+		//.max_yc         = 0x0fff,
 		.rept_size	= 16,
 		.process_pkt	= usbtouch_process_multi,
 		.get_pkt_len	= egalax_get_pkt_len,

@@ -1066,7 +1066,20 @@ void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct 
 	/* report the usage code as scancode if the key status has changed */
 	if (usage->type == EV_KEY && !!test_bit(usage->code, input->key) != value)
 		input_event(input, EV_MSC, MSC_SCAN, usage->hid);
-
+#if 0
+//+RDG: patch for eGalax touchscreen: swap X and Y, invert X direction
+		if (usage->type == EV_ABS)
+			{
+				if (usage->hid == HID_GD_X) {
+					usage->code = 1; // vs 0 (X becomes Y)
+					value = 4096 - value;
+				} else if (usage->hid == HID_GD_Y) {
+					usage->code = 0; // vs 1 (Y becomes X)
+				}
+//printk("RDG: hidinput_hid_event: type = %d, code = %d, value = %d (hid = 0x%x)\n", usage->type, usage->code, value, usage->hid);
+			}
+//-RDG
+#endif
 	input_event(input, usage->type, usage->code, value);
 
 	if ((field->flags & HID_MAIN_ITEM_RELATIVE) && (usage->type == EV_KEY))

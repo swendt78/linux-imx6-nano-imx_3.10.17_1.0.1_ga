@@ -2318,7 +2318,7 @@ bool hid_ignore(struct hid_device *hdev)
 			return true;
 		break;
 //add ben
-#if 0 
+#if 1 
 	case USB_VENDOR_ID_DWAV:
 		/* These are handled by usbtouchscreen. hdev->type is probably
 		 * HID_TYPE_USBNONE, but we say !HID_TYPE_USBMOUSE to match

@@ -1057,7 +1057,7 @@ return true;
 
 static struct input_handler mousedev_handler = {
 	.event		= mousedev_event,
-	.match 		= mousedev_match, /* Added by EETI */
+	//.match 		= mousedev_match, /* Added by EETI */
 	.connect	= mousedev_connect,
 	.disconnect	= mousedev_disconnect,
 	.legacy_minors	= true,
