@@ -162,7 +162,7 @@
                         "Mic Jack", "Mic Bias",
                         "Headphone Jack", "HP_OUT";
                 mux-int-port = <1>;
-                mux-ext-port = <3>;
+                mux-ext-port = <4>;
         };
 
 	sound-hdmi {

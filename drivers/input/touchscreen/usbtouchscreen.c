@@ -64,7 +64,7 @@
 #include <linux/syscalls.h>
 #include <asm/unistd.h>
 #include <asm/uaccess.h>
-
+#include <linux/time.h>
 
 #define DRIVER_VERSION		"v0.6"
 #define DRIVER_AUTHOR		"Daniel Ritz <daniel.ritz@gmx.ch>"
@@ -1371,6 +1371,7 @@ static void usbtouch_process_pkt(struct usbtouch_usb *usbtouch,
                                  unsigned char *pkt, int len)
 {
 	struct usbtouch_device_info *type = usbtouch->type;
+	struct timeval tv;
 
 	if (!type->read_data(usbtouch, pkt))
 			return;
@@ -1383,11 +1384,17 @@ static void usbtouch_process_pkt(struct usbtouch_usb *usbtouch,
 	        if (cal[6]==0)
         	        cal[6] = 1;
 	
+		do_gettimeofday(&tv);
+		printk("11-jiffies:%lu, tv.tv_sec:%lu, tv.tv_nsec:%lu ,x=%d,y=%d \n", jiffies, tv.tv_sec, tv.tv_usec, usbtouch->x, usbtouch->y);
+
         	input_report_abs(usbtouch->input, ABS_X, (cal[0]*(usbtouch->x) + cal[1]*(usbtouch->y) + cal[2])/cal[6] );
 	        input_report_abs(usbtouch->input, ABS_Y, (cal[3]*(usbtouch->x) + cal[4]*(usbtouch->y) + cal[5])/cal[6] );
 
 		input_report_abs(usbtouch->input, ABS_PRESSURE, 1);
                 input_report_key(usbtouch->input, BTN_TOUCH, 1);
+
+                do_gettimeofday(&tv);
+                printk("22-jiffies:%lu, tv.tv_sec:%lu, tv.tv_nsec:%lu ", jiffies, tv.tv_sec, tv.tv_usec);
 	}
 	else
 	{
