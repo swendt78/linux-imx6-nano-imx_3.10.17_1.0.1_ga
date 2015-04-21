@@ -55,16 +55,7 @@
 #include <linux/usb.h>
 #include <linux/usb/input.h>
 #include <linux/hid.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/fs.h>
-#include <linux/string.h>
-#include <linux/mm.h>
-#include <linux/syscalls.h>
-#include <asm/unistd.h>
-#include <asm/uaccess.h>
-#include <linux/time.h>
+
 
 #define DRIVER_VERSION		"v0.6"
 #define DRIVER_AUTHOR		"Daniel Ritz <daniel.ritz@gmx.ch>"
@@ -77,13 +68,6 @@ MODULE_PARM_DESC(swap_xy, "If set X and Y axes are swapped.");
 static bool hwcalib_xy;
 module_param(hwcalib_xy, bool, 0644);
 MODULE_PARM_DESC(hwcalib_xy, "If set hw-calibrated X/Y are used if available");
-
-//add ben
-static int cal[7] = {1, 0, 0,   0, 1, 0,  1 };
-module_param_array(cal, int, NULL, S_IRUGO | S_IWUSR);
-
-static int screenres[2] = {1024, 600};
-module_param_array(screenres, int, NULL, S_IRUGO | S_IWUSR);
 
 /* device specifc data/functions */
 struct usbtouch_usb;
@@ -174,9 +158,6 @@ static const struct usb_device_id usbtouch_devices[] = {
 	/* ignore the HID capable devices, handled by usbhid */
 	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_IGNORE},
 	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_IGNORE},
-	//add ben
-	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info = DEVTYPE_EGALAX},
-	//{USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info = DEVTYPE_EGALAX},	
 
 	/* normal device IDs */
 	{USB_DEVICE(0x3823, 0x0001), .driver_info = DEVTYPE_EGALAX},
@@ -323,13 +304,6 @@ static int e2i_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
 #define EGALAX_PKT_TYPE_REPT		0x80
 #define EGALAX_PKT_TYPE_DIAG		0x0A
 
-//add ben
-#define EGALAX_PKT_TYPE_SIZE		0x06
-#define EGALAX_PKT_TYPE_11BITS		0x00
-#define EGALAX_PKT_TYPE_12BITS		0x02
-#define EGALAX_PKT_TYPE_13BITS		0x04
-#define EGALAX_PKT_TYPE_14BITS		0x06
-
 static int egalax_init(struct usbtouch_usb *usbtouch)
 {
 	int ret, i;
@@ -369,7 +343,6 @@ static int egalax_init(struct usbtouch_usb *usbtouch)
 	return ret;
 }
 
-#if 1
 static int egalax_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
 {
 	if ((pkt[0] & EGALAX_PKT_TYPE_MASK) != EGALAX_PKT_TYPE_REPT)
@@ -377,53 +350,11 @@ static int egalax_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
 
 	dev->x = ((pkt[3] & 0x0F) << 7) | (pkt[4] & 0x7F);
 	dev->y = ((pkt[1] & 0x0F) << 7) | (pkt[2] & 0x7F);
-        //dev->x = ((pkt[2] & 0x0F) << 7) | (pkt[1] & 0xFF);
-        //dev->y = ((pkt[4] & 0x0F) << 7) | (pkt[3] & 0xFF);
 	dev->touch = pkt[0] & 0x01;
 
-        //printk( KERN_INFO "PFO : x = %d, y = %d", dev->x, dev->y );
-        //printk( KERN_INFO "PFO : %X %X %X %X %X %X", pkt[0], pkt[1], pkt[2], pkt[3], pkt[4], pkt[5] );
 	return 1;
 }
-#endif
-#if 0
- static int egalax_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
- {
-	int mask;
- 	if ((pkt[0] & EGALAX_PKT_TYPE_MASK) != EGALAX_PKT_TYPE_REPT)
- 		return 0;
- 
-//-	dev->x = ((pkt[3] & 0x0F) << 7) | (pkt[4] & 0x7F);
-//-	dev->y = ((pkt[1] & 0x0F) << 7) | (pkt[2] & 0x7F);
-	switch(pkt[0] & EGALAX_PKT_TYPE_SIZE)
-	{
-	case EGALAX_PKT_TYPE_11BITS : 
-		mask = 0x07FF;
-		break;
-	case EGALAX_PKT_TYPE_12BITS : 
-		mask = 0x0FFF;
-		break;
-	case EGALAX_PKT_TYPE_13BITS : 
-		mask = 0x1FFF;
-		break;
-	case EGALAX_PKT_TYPE_14BITS : 
-		mask = 0x3FFF;
-		break;
-	default : 
-		mask = 0x7FFF;
-		break;
-	}
 
-	dev->x = (((pkt[4] & 0x7F) << 7) | (pkt[3] & 0x7F)) & mask;
-	dev->y = (((pkt[2] & 0x7F) << 7) | (pkt[1] & 0x7F)) & mask;
-	printk( KERN_INFO "PFO : x = %d, y = %d", dev->x, dev->y );
-	printk( KERN_INFO "PFO : %X %X %X %X %X %X", pkt[0], pkt[1], pkt[2], pkt[3], pkt[4], pkt[5] );
-	
- 	dev->touch = pkt[0] & 0x01;
- 
- 	return 1;
-}
-#endif
 static int egalax_get_pkt_len(unsigned char *buf, int len)
 {
 	switch (buf[0] & EGALAX_PKT_TYPE_MASK) {
@@ -1157,13 +1088,9 @@ static struct usbtouch_device_info usbtouch_dev_info[] = {
 #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
 	[DEVTYPE_EGALAX] = {
 		.min_xc		= 0x0,
-		//.max_xc		= 0x07ff,
-		.max_xc         = 800,
+		.max_xc		= 0x07ff,
 		.min_yc		= 0x0,
-		//.max_yc		= 0x07ff,
-		.max_yc         = 600,
-		.min_press	= 0,
-		.max_press      = 1,
+		.max_yc		= 0x07ff,
 		.rept_size	= 16,
 		.process_pkt	= usbtouch_process_multi,
 		.get_pkt_len	= egalax_get_pkt_len,
@@ -1363,49 +1290,16 @@ static struct usbtouch_device_info usbtouch_dev_info[] = {
 /*****************************************************************************
  * Generic Part
  */
-//static int cal[7] = {1, 0, 0,   0, 1, 0,  1 };
-//static int cal[7] = {35459, 460, -14832120, 39, -25739, 42951456, 65536 };
-//static int cal[7] = {35518, -260, -14112096, 462, -25544, 43624456, 65536 };
-
 static void usbtouch_process_pkt(struct usbtouch_usb *usbtouch,
                                  unsigned char *pkt, int len)
 {
 	struct usbtouch_device_info *type = usbtouch->type;
-	struct timeval tv;
 
 	if (!type->read_data(usbtouch, pkt))
 			return;
 
-	//printk("usbtouch_process_pkt=%d \n", usbtouch->touch);
+	input_report_key(usbtouch->input, BTN_TOUCH, usbtouch->touch);
 
-	if (usbtouch->touch == 1)
-	{
-	        /////add ben
-	        if (cal[6]==0)
-        	        cal[6] = 1;
-	
-		do_gettimeofday(&tv);
-		printk("11-jiffies:%lu, tv.tv_sec:%lu, tv.tv_nsec:%lu ,x=%d,y=%d \n", jiffies, tv.tv_sec, tv.tv_usec, usbtouch->x, usbtouch->y);
-
-        	input_report_abs(usbtouch->input, ABS_X, (cal[0]*(usbtouch->x) + cal[1]*(usbtouch->y) + cal[2])/cal[6] );
-	        input_report_abs(usbtouch->input, ABS_Y, (cal[3]*(usbtouch->x) + cal[4]*(usbtouch->y) + cal[5])/cal[6] );
-
-		input_report_abs(usbtouch->input, ABS_PRESSURE, 1);
-                input_report_key(usbtouch->input, BTN_TOUCH, 1);
-
-                do_gettimeofday(&tv);
-                printk("22-jiffies:%lu, tv.tv_sec:%lu, tv.tv_nsec:%lu ", jiffies, tv.tv_sec, tv.tv_usec);
-	}
-	else
-	{
-		input_report_abs(usbtouch->input, ABS_PRESSURE, 0);
-		input_report_key(usbtouch->input, BTN_TOUCH, 0);
-		input_sync(usbtouch->input);
-	}
-
-
-	
-#if 0
 	if (swap_xy) {
 		input_report_abs(usbtouch->input, ABS_X, usbtouch->y);
 		input_report_abs(usbtouch->input, ABS_Y, usbtouch->x);
@@ -1413,14 +1307,9 @@ static void usbtouch_process_pkt(struct usbtouch_usb *usbtouch,
 		input_report_abs(usbtouch->input, ABS_X, usbtouch->x);
 		input_report_abs(usbtouch->input, ABS_Y, usbtouch->y);
 	}
-
 	if (type->max_press)
-	{
-		printk("usbtouch_process_pkt---2 \n");
 		input_report_abs(usbtouch->input, ABS_PRESSURE, usbtouch->press);
-	}
 	input_sync(usbtouch->input);
-#endif
 }
 
 
@@ -1660,11 +1549,6 @@ static int usbtouch_probe(struct usb_interface *intf,
 	struct usb_device *udev = interface_to_usbdev(intf);
 	struct usbtouch_device_info *type;
 	int err = -ENOMEM;
-	//add bne
-        char read_buf[128];
-        struct file *file = NULL;
-        int result;
-        mm_segment_t old_fs;
 
 	/* some devices are ignored */
 	if (id->driver_info == DEVTYPE_IGNORE)
@@ -1800,28 +1684,6 @@ static int usbtouch_probe(struct usb_interface *intf,
 			goto out_unregister_input;
 		}
 	}
-
-	//add ben read file
-	//char read_buf[128];
-	//struct file *file = NULL;
-	//int result;
-	//mm_segment_t old_fs;
-
-	file = filp_open("/etc/pointercal", O_RDONLY, 0);	
-        if (IS_ERR(file)) {
-                printk("error open /etc/pointercal \n");
-                return 0;
-        }	
-
-	old_fs=get_fs();
-	set_fs(get_ds());
-
-	result=file->f_op->read(file, read_buf, sizeof(read_buf), &file->f_pos);
-	if (result > 0)
-	{
-		printk ("read /etc/pointercal:%s \n", read_buf);
-	}
-	filp_close(file, NULL);
 
 	return 0;
 
