@@ -696,6 +696,29 @@ static struct attribute_group imx_pcie_attrgroup = {
 	.attrs	= imx_pcie_attrs,
 };
 
+static struct device_node *np_reboot_test;
+void reboot_test (void)
+{
+ 	/* Fetch GPIOs */
+	int reboot_test_gpio;
+
+	reboot_test_gpio = of_get_named_gpio(np_reboot_test, "reboot_test-gpio", 0);
+	if (!gpio_is_valid(reboot_test_gpio)) {
+		pr_err("%s: reset gpio not specified\n" , __func__);
+		return;
+	}
+
+	if (gpio_request(reboot_test_gpio, "reboot_test_gpio")) {
+		pr_err("%s request reset gpio failed\n", __func__);
+		return;
+	}
+
+	gpio_direction_output(reboot_test_gpio, 1);
+ 	printk("reboot_test end.. \n");
+
+	gpio_set_value(reboot_test_gpio, 0);
+}
+
 static int __init imx6_pcie_probe(struct platform_device *pdev)
 {
 	struct imx6_pcie *imx6_pcie;
@@ -707,6 +730,10 @@ static int __init imx6_pcie_probe(struct platform_device *pdev)
 	void __iomem *pcie_arb_base_addr;
 	struct timeval tv1, tv2, tv3;
 	u32 tv_count1, tv_count2;
+
+	np_reboot_test = np;
+	//memcpy(&np_reboot_test, np, sizeof(np_reboot_test));
+	//reboot_test();
 
 	imx6_pcie = devm_kzalloc(&pdev->dev, sizeof(*imx6_pcie), GFP_KERNEL);
 	if (!imx6_pcie)
@@ -732,6 +759,24 @@ static int __init imx6_pcie_probe(struct platform_device *pdev)
 		return PTR_ERR(pp->dbi_base);
 
 	/* Fetch GPIOs */
+#if 0
+	int reboot_test_gpio;
+
+        reboot_test_gpio = of_get_named_gpio(np, "reboot_test-gpio", 0);
+        if (!gpio_is_valid(reboot_test_gpio)) {
+                pr_err("%s: reset gpio not specified\n" , __func__);
+                return;
+        }
+
+        if (gpio_request(reboot_test_gpio, "reboot_test_gpio")) {
+                pr_err("%s request reset gpio failed\n", __func__);
+                return;
+        } 
+         
+        printk("reboot_test end.. \n");
+        gpio_set_value(reboot_test_gpio, 0);
+#endif
+	////////////
 	imx6_pcie->reset_gpio = of_get_named_gpio(np, "reset-gpio", 0);
 	if (gpio_is_valid(imx6_pcie->reset_gpio)) {
 		ret = devm_gpio_request_one(&pdev->dev,

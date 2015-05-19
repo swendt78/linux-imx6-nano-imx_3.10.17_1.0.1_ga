@@ -275,6 +275,17 @@
 	pu-supply = <&pu_dummy>; /* use pu_dummy if VDDSOC share with VDDPU */
 };
 
+//emmc flash
+&usdhc4 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usdhc4_1>;
+        bus-width = <8>;
+        non-removable;
+        no-1-8-v;
+	keep-power-in-suspend;
+        status = "okay";
+};
+
 &ecspi1 {
 	fsl,spi-num-chipselects = <1>;
 	cs-gpios = <&gpio4 9 0>;
@@ -513,6 +524,7 @@
 
 				//add ben
 				MX6QDL_PAD_SD3_DAT5__GPIO7_IO00	0x80000000
+				MX6QDL_PAD_GPIO_19__GPIO4_IO05 0x1b0b0
 			>;
 		};
 	};
@@ -553,6 +565,7 @@
 
 	//power-on-gpio = <&gpio3 19 0>;
         reset-gpio = <&gpio1 5 0>;
+	reboot_test-gpio = <&gpio4 5 1>;
         status = "okay";
 };
 
@@ -620,17 +633,6 @@
 	keep-power-in-suspend;
 	enable-sdio-wakeup;
 	status = "okay";
-};
-
-//emmc flash
-&usdhc4 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_usdhc4_1>;
-        bus-width = <8>;
-        non-removable;
-        no-1-8-v;
-	keep-power-in-suspend;
-        status = "okay";
 };
 
 &vpu {

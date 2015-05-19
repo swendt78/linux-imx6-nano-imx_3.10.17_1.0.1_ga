@@ -93,9 +93,16 @@ static void __soft_restart(void *addr)
 	BUG();
 }
 
+extern void reboot_test(void);
 void soft_restart(unsigned long addr)
 {
 	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
+
+	//add reboot_test signal
+	//printk("add reboot_test signal++++ \n");
+	//reboot_test();
+        //mdelay(300);
+
 
 	/* Disable interrupts first */
 	local_irq_disable();
@@ -240,9 +247,15 @@ void machine_power_off(void)
  */
 void machine_restart(char *cmd)
 {
-	smp_send_stop();
+	//printk("add reboot_test signal++++ 123\n");
+	//smp_send_stop();
 
-	arm_pm_restart(reboot_mode, cmd);
+	//arm_pm_restart(reboot_mode, cmd);
+
+        //add reboot_test signal
+        printk("add reboot_test signal++++ \n");
+        reboot_test();
+        mdelay(500);
 
 	/* Give a grace period for failure to restart of 1s */
 	mdelay(1000);
